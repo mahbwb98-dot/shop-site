@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بازار من</title>
+
+<style>
+body{
+font-family:sans-serif;
+margin:0;
+background:#f5f5f5;
+text-align:center;
+}
+
+header{
+background:#d32f2f;
+color:white;
+padding:20px;
+}
+
+input{
+padding:10px;
+width:80%;
+max-width:400px;
+margin:10px;
+border-radius:10px;
+border:1px solid #ccc;
+}
+
+.products{
+display:flex;
+flex-wrap:wrap;
+justify-content:center;
+gap:20px;
+padding:20px;
+}
+
+.product{
+background:white;
+padding:15px;
+border-radius:10px;
+width:220px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.product img{
+width:100%;
+border-radius:8px;
+}
+
+button{
+background:#1976d2;
+color:white;
+border:none;
+padding:8px;
+border-radius:5px;
+cursor:pointer;
+}
+
+.cart{
+background:white;
+padding:15px;
+margin:20px;
+border-radius:10px;
+}
+
+#loginBox{
+display:none;
+background:white;
+padding:20px;
+margin:20px;
+border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>🛒 بازار من</h1>
+<p>خرید آسان - فروش سریع</p>
+
+<div>
+<button onclick="showLogin()">👤 ورود / ثبت‌نام</button>
+<span id="welcomeUser"></span>
+</div>
+
+</header>
+
+<!-- جستجو -->
+<input type="text" id="searchInput" placeholder="🔍 جستجوی محصول..." onkeyup="searchProduct()">
+
+<!-- محصولات -->
+<div class="products">
+
+<div class="product">
+<img src="https://via.placeholder.com/150">
+<h3>گوشی موبایل</h3>
+<p>12,000,000 تومان</p>
+<button onclick="addToCart('گوشی موبایل',12000000)">افزودن به سبد</button>
+<a href="product.html?name=گوشی موبایل&price=12000000&img=https://via.placeholder.com/300">
+<button>مشاهده</button>
+</a>
+</div>
+
+<div class="product">
+<img src="https://via.placeholder.com/150">
+<h3>هدفون بی‌سیم</h3>
+<p>850,000 تومان</p>
+<button onclick="addToCart('هدفون بی‌سیم',850000)">افزودن به سبد</button>
+<a href="product.html?name=هدفون بی‌سیم&price=850000&img=https://via.placeholder.com/300">
+<button>مشاهده</button>
+</a>
+</div>
+
+</div>
+
+<!-- سبد خرید -->
+<div class="cart">
+<h2>🛍 سبد خرید</h2>
+<div id="cartItems"></div>
+<h3>💰 مجموع: <span id="total">0</span> تومان</h3>
+
+<button onclick="showOrderForm()" style="background:green;margin-top:10px;">
+✅ ثبت سفارش
+</button>
+
+</div>
+
+<!-- فرم سفارش -->
+<div id="orderBox" style="display:none;background:white;padding:20px;margin:20px;border-radius:10px;">
+<h3>📦 اطلاعات تحویل</h3>
+
+<input type="text" id="address" placeholder="آدرس کامل"><br>
+<input type="text" id="phone" placeholder="شماره تماس"><br>
+
+<button onclick="submitOrder()" style="background:blue;">
+📩 ارسال سفارش
+</button>
+
+</div>
+
+<!-- فرم ورود -->
+<div id="loginBox">
+<h3>ورود / ثبت‌نام</h3>
+
+<input type="text" id="username" placeholder="نام کاربری"><br>
+<input type="password" id="password" placeholder="رمز عبور"><br>
+
+<button onclick="register()">ثبت‌نام</button>
+<button onclick="login()">ورود</button>
+</div>
+
+<script>
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let total = 0;
+cart.forEach(item => total += item.price);
+renderCart();
+
+function addToCart(name,price){
+cart.push({name,price});
+saveCart();
+renderCart();
+}
+
+function removeItem(index){
+cart.splice(index,1);
+saveCart();
+renderCart();
+}
+
+function saveCart(){
+localStorage.setItem("cart",JSON.stringify(cart));
+}
+
+function renderCart(){
+let cartDiv = document.getElementById("cartItems");
+let totalSpan = document.getElementById("total");
+total = 0;
+cartDiv.innerHTML="";
+
+cart.forEach((item,index)=>{
+total += item.price;
+cartDiv.innerHTML += `
+<p>${item.name} - ${item.price}
+<button onclick="removeItem(${index})">❌</button>
+</p>
+`;
+});
+
+totalSpan.innerText = total;
+}
+
+/* جستجو */
+function searchProduct(){
+let input = document.getElementById("searchInput").value.toLowerCase();
+let products = document.getElementsByClassName("product");
+
+for(let i=0;i<products.length;i++){
+let title = products[i].getElementsByTagName("h3")[0].innerText.toLowerCase();
+
+if(title.includes(input)){
+products[i].style.display="block";
+}else{
+products[i].style.display="none";
+}
+}
+}
+
+/* سفارش */
+function showOrderForm(){
+document.getElementById("orderBox").style.display="block";
+}
+
+function submitOrder(){
+let address = document.getElementById("address").value;
+let phone = document.getElementById("phone").value;
+
+if(address==""||phone==""){
+alert("❌ اطلاعات کامل نیست");
+return;
+}
+
+let orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+orders.push({
+items:cart,
+total:total,
+address:address,
+phone:phone,
+date:new Date()
+});
+
+localStorage.setItem("orders",JSON.stringify(orders));
+localStorage.removeItem("cart");
+
+alert("✅ سفارش ثبت شد");
+location.reload();
+}
+
+/* ورود و ثبت‌نام */
+function showLogin(){
+document.getElementById("loginBox").style.display="block";
+}
+
+function register(){
+let username=document.getElementById("username").value;
+let password=document.getElementById("password").value;
+
+localStorage.setItem("user",JSON.stringify({username,password}));
+alert("✅ ثبت‌نام شد");
+location.reload();
+}
+
+function login(){
+let username=document.getElementById("username").value;
+let password=document.getElementById("password").value;
+
+let user=JSON.parse(localStorage.getItem("user"));
+
+if(user && user.username===username && user.password===password){
+localStorage.setItem("loggedIn",username);
+alert("✅ ورود موفق");
+location.reload();
+}else{
+alert("❌ اطلاعات اشتباه");
+}
+}
+
+function checkUser(){
+let logged=localStorage.getItem("loggedIn");
+if(logged){
+document.getElementById("welcomeUser").innerText="سلام "+logged;
+}
+}
+
+checkUser();
+
+</script>
+
+</body>
+</html>
