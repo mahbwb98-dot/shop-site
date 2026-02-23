@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>بازار من 🚀</title>
+
+<style>
+body{
+background:white;
+color:black;
+font-family: Arial;
+text-align:center;
+}
+
+input, select{
+padding:8px;
+margin:5px;
+width:250px;
+}
+
+button{
+padding:8px 15px;
+margin:5px;
+cursor:pointer;
+}
+
+.card{
+background:white;
+margin:20px auto;
+padding:20px;
+width:280px;
+border-radius:15px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.card img{
+width:200px;
+border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<h2>بازار من 🚀</h2>
+
+<!-- فرم ثبت آگهی -->
+<input type="text" placeholder="نام محصول"><br>
+<input type="text" placeholder="قیمت"><br>
+
+<select>
+<option value="نو">نو</option>
+<option value="در حد نو">در حد نو</option>
+<option value="کارکرده">کارکرده</option>
+</select><br>
+
+<input type="text" placeholder="شهر / موقعیت فروشنده"><br>
+
+<input type="file" accept="image/*"><br><br>
+
+<button onclick="addAd()">ثبت آگهی</button>
+<input type="text" placeholder="نام فروشگاه">
+<button onclick="createShop()">ساخت فروشگاه</button>
+<hr>
+
+<div id="adsContainer"></div>
+
+<script>
+
+function saveAdsToStorage(ads){
+localStorage.setItem("ads", JSON.stringify(ads));
+}
+
+function getAdsFromStorage(){
+return JSON.parse(localStorage.getItem("ads")) || [];
+}
+
+function createCard(ad){
+
+let card = document.createElement("div");
+card.className = "card";
+
+card.innerHTML =
+"<h2>"+ad.name+"</h2>" +
+"<p>👤 فروشنده: "+ad.owner+"</p>" +
+"<p>📍 شهر: "+ad.city+"</p>" +
+"<p>🛍 نوع: "+ad.type+"</p>" +
+"<img src='"+ad.image+"'>" +
+"<p>💰 قیمت: "+ad.price+" افغانی</p>" +
+"<button>تماس</button>" +
+"<button onclick='deleteAd(this)'>حذف</button>";
+
+document.getElementById("adsContainer").appendChild(card);
+}
+
+function addAd(){
+
+let inputs = document.querySelectorAll("input");
+let name = inputs[0].value;
+let price = inputs[1].value;
+let city = inputs[2].value;
+let file = inputs[3].files[0];
+let type = document.querySelector("select").value;
+
+if(name=="" || price=="" || city=="" || !file){
+alert("همه فیلدها را پر کن");
+return;
+}
+
+let reader = new FileReader();
+
+reader.onload = function(e){
+
+let image = e.target.result;
+
+let ad = {
+id: Date.now(),
+name:name,
+price:price,
+city:city,
+type:type,
+image:image,
+owner:"کاربر"
+};
+
+let ads = getAdsFromStorage();
+ads.push(ad);
+saveAdsToStorage(ads);
+
+createCard(ad);
+};
+
+reader.readAsDataURL(file);
+
+inputs[0].value="";
+inputs[1].value="";
+inputs[2].value="";
+inputs[3].value="";
+}
+
+function loadAds(){
+
+let ads = getAdsFromStorage();
+
+document.getElementById("adsContainer").innerHTML="";
+
+ads.forEach(ad=>{
+createCard(ad);
+});
+}
+
+function deleteAd(btn){
+
+let card = btn.parentElement;
+let title = card.querySelector("h2").innerText;
+
+let ads = getAdsFromStorage();
+
+ads = ads.filter(ad => ad.name !== title);
+
+saveAdsToStorage(ads);
+
+card.remove();
+
+}
+
+window.onload = loadAds;
+
+</script>
+
+</body>
+</html>
